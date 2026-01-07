@@ -22,7 +22,57 @@ function ItemManager () {
   const itemName = useRef(null);
 
   //TODO: Your code goes here
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [nextId, setNextId] = useState(1);
+  
+  const categoryIcons = {
+    Stationary: stationaryLogo,
+    Kitchenware: kitchenwareLogo,
+    Appliance: applianceLogo,
+  };
 
+  const handleAddItem = () => {
+    const itemNameValue = itemName.current.value;
+    if (!itemNameValue.trim()) {
+      setErrorMsg("Item name must not be empty");
+      return;
+    }
+
+    const duplicate = items.some(
+      item => item.name.toLowerCase() === itemNameValue.toLowerCase()
+    );
+
+    if (duplicate) {
+      setErrorMsg("Item must not be a duplicate");
+      return;
+    }
+
+    if (!category) {
+      setErrorMsg("Please select a category");
+      return;
+    }
+
+    if (price < 0) {
+      setErrorMsg("Price must not be less than 0");
+      return;
+    }
+
+    setItems([
+      ...items, 
+      { id: nextId, itemNameValue, category, price }
+    ]);
+
+    setNextId(nextId + 1);
+    itemName.current.value = "";
+    setCategory("");
+    setPrice("");
+    setErrorMsg("");
+  };
+
+  const handleDelete = (id) => {
+    setItems(items.filter(item => item.id !== id));
+  };
   /*
    * !!! IMPORTANT !!!
    * - Implement your output based on the given sample layout.
@@ -52,11 +102,61 @@ function ItemManager () {
               * - All items must be listed here (above the form row).
               * - Your input form must be implemented as the LAST row in this table.
               */}
+            {items.map(item => (
+              <tr key = {item.id}>
+                <td>{item.id}</td>
+                <id>{item.name}</id>
+                <td>
+                  <img
+                    src={categoryIcons[item.category]}
+                    alt={item.category}
+                  />
+                </td>
+                <td>{item.price}</td>
+                <td>
+                  <img
+                    src={deleteLogo}
+                    alt="delete"
+                    onClick={() => handleDelete(item.id)}
+                    style={{ cursor: "pointer" }}
+                  />
+                </td>
+              </tr>
+            ))}
+
+            <tr>
+              <td></td>
+              <td>
+                <input
+                  ref={itemName}
+                  type="text"
+                />
+              </td>
+              <td>
+                <select value={category} onChange={e => setCategory(e.target.value)}>
+                    <option value=""></option>
+                    <option value="Stationary">Stationary</option>
+                    <option value="Kitchenware">Kitchenware</option>
+                    <option value="Appliance">Appliance</option>
+                </select>
+              </td>
+              <td>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={e => setPrice(e.target.value)}
+                />
+              </td>
+              <td>
+                <button onClick={handleAddItem}>Add Item</button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
       <div id="error-message">
          {/* You MUST display the errorMsg state here. */}
+         {errorMsg}
       </div>
     </>
   );
